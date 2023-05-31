@@ -2,7 +2,8 @@
 const { 
     client,
     getAllPosts,
-    createPost
+    createPost,
+    updatePost
 } = require('./index');
 
 //DROP ALL TABLES
@@ -42,8 +43,9 @@ async function createTables(){
 async function createInitialPosts(){
     try {
         console.log("Starting to create posts...");
-        const post1 = await createPost({title: 'post1', description: 'description1', imageURL: 'image1'});
-        console.log('post1 :>> ', post1);
+
+        await createPost({title: 'post1', description: 'description1', imageURL: 'image1'});
+
         console.log("Finished creating posts!");
     } catch (error) {
         console.log("Error creating posts!");
@@ -63,14 +65,21 @@ async function rebuildDB() {
     }
 }
 
-
 //TEST DATABASE:
 async function testDB() {
     try {
         console.log("Starting to test database...");
 
+        console.log("Calling getAllPosts...");
         const posts = await getAllPosts();
-        console.log('posts :>> ', posts);
+        console.log('Result: ', posts);
+
+        console.log("Calling updatePost...");
+        const updatedPost = await updatePost(posts[0].id, {
+            title: "new title",
+            description: "new description"
+        });
+        console.log('Result: ', updatedPost);
 
         console.log("Finished testing database!");
     } catch (error) {

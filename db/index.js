@@ -12,16 +12,45 @@ async function getAllPosts() {
     return rows;
 }
 
-async function createPost({title, description, imageURL}){
+async function createPost({
+    title,
+    description,
+    imageURL
+}) {
     try {
-        const { rows } = await client.query(`
+        const { rows: [post] } = await client.query(`
             INSERT INTO posts (title, description, "imageURL") 
             VALUES ($1, $2, $3)
             ON CONFLICT (title) DO NOTHING
             RETURNING *;
-        `, [ title, description, imageURL ]);
+        `, [title, description, imageURL]);
 
-        return rows;
+        return post;
+    } catch (error) {
+        throw error;
+    }
+}
+
+async function updatePost(id, fields = {}) {
+    //build setString
+    const setString = Object.keys(fields).map(
+        (key, index) => `"${key}"=$${index + 1}`
+    ).join(', ')
+
+    //return early if this is called without fields
+    if (setString.length === 0) {
+        return;
+    }
+
+    try {
+        const { rows: [post] } = await client.query(`
+            UPDATE posts
+            SET ${setString}
+            WHERE id=${id}
+            RETURNING *;
+        `, Object.values(fields));
+
+        return post;
     } catch (error) {
         throw error;
     }
@@ -30,5 +59,6 @@ async function createPost({title, description, imageURL}){
 module.exports = {
     client,
     getAllPosts,
-    createPost
+    createPost,
+    updatePost
 }
