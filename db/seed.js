@@ -1,16 +1,20 @@
 
-const { 
+const {
     client,
     getAllPosts,
     createPost,
-    updatePost
+    updatePost,
+    createTag,
+    getAllTags
 } = require('./index');
 
 //DROP ALL TABLES
-async function dropTables(){
+async function dropTables() {
     try {
         console.log("Starting to drop tables...");
         await client.query(`
+            DROP TABLE IF EXISTS post_tags;
+            DROP TABLE IF EXISTS tags;
             DROP TABLE IF EXISTS posts;
         `);
         console.log("Finished dropping tables!");
@@ -21,7 +25,7 @@ async function dropTables(){
 }
 
 //CREATE ALL TABLES
-async function createTables(){
+async function createTables() {
     try {
         console.log("Starting to build tables...");
         await client.query(`
@@ -32,6 +36,24 @@ async function createTables(){
                 "imageURL" TEXT
             );
         `);
+
+        await client.query(`
+            CREATE TABLE tags (
+                id SERIAL PRIMARY KEY,
+                content TEXT NOT NULL
+            );
+        
+        `);
+
+        await client.query(`
+            CREATE TABLE post_tags (
+            id SERIAL PRIMARY KEY,
+            "postId" INTEGER REFERENCES posts(id),
+            "tagId" INTEGER REFERENCES tags(id),
+            UNIQUE ("postId", "tagId")
+            );
+        `);
+
         console.log("Finished building tables!");
     } catch (error) {
         console.log("Error building tables!");
@@ -39,17 +61,32 @@ async function createTables(){
     }
 }
 
-//CREATE SEED POSTS
-async function createInitialPosts(){
+//SEED POSTS
+async function createInitialPosts() {
     try {
         console.log("Starting to create posts...");
 
-        await createPost({title: 'post1', description: 'description1', imageURL: 'image1'});
+        await createPost({ title: 'post1', description: 'description1', imageURL: 'image1' });
 
         console.log("Finished creating posts!");
     } catch (error) {
         console.log("Error creating posts!");
         throw error;
+    }
+}
+
+//SEED TAGS
+async function createInitialTags(){
+    try {
+        console.log("Starting to create tags...");
+
+        await createTag({content: "tag1"});
+        await createTag({content: "tag2"});
+        await createTag({content: "tag3"});
+
+        console.log("Finished creating tags!");
+    } catch (error) {
+        console.log("Error creating tags!")
     }
 }
 
@@ -60,6 +97,7 @@ async function rebuildDB() {
         await dropTables();
         await createTables();
         await createInitialPosts();
+        await createInitialTags();
     } catch (error) {
         console.error(error);
     }
@@ -80,6 +118,10 @@ async function testDB() {
             description: "new description"
         });
         console.log('Result: ', updatedPost);
+
+        console.log("Calling getAllTags...");
+        const tags = await getAllTags();
+        console.log('Result: ', tags);
 
         console.log("Finished testing database!");
     } catch (error) {
