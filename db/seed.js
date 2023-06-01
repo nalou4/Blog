@@ -5,7 +5,9 @@ const {
     createPost,
     updatePost,
     getAllPostsByTag,
-    getAllTags
+    getAllTags,
+    createAdmin,
+    getAllAdmins
 } = require('./index');
 
 //DROP ALL TABLES
@@ -16,6 +18,7 @@ async function dropTables() {
             DROP TABLE IF EXISTS post_tags;
             DROP TABLE IF EXISTS tags;
             DROP TABLE IF EXISTS posts;
+            DROP TABLE IF EXISTS admins;
         `);
         console.log("Finished dropping tables!");
     } catch (error) {
@@ -53,9 +56,34 @@ async function createTables() {
             );
         `);
 
+        await client.query(`
+            CREATE TABLE admins (
+                id SERIAL PRIMARY KEY,
+                username varchar(255) UNIQUE NOT NULL,
+                password varchar(255) NOT NULL
+            );
+        `);
+
         console.log("Finished building tables!");
     } catch (error) {
         console.log("Error building tables!");
+        throw error;
+    }
+}
+
+//SEED ADMINS
+async function createInitialAdmin(){
+    try {
+        console.log("Starting to create admin...");
+
+        await createAdmin({
+            username: 'admin1',
+            password: 'adminpass1'
+        })
+
+        console.log("Finished creating admin!");
+    } catch (error) {
+        console.log("Error creating admin!");
         throw error;
     }
 }
@@ -93,6 +121,7 @@ async function rebuildDB() {
         await dropTables();
         await createTables();
         await createInitialPosts();
+        await createInitialAdmin();
     } catch (error) {
         console.error(error);
     }
@@ -128,6 +157,10 @@ async function testDB() {
         console.log("Calling getAllTags...");
         const allTags = await getAllTags();
         console.log("Result:", allTags);
+
+        console.log("Calling createAdmin...");
+        const admins = await getAllAdmins();
+        console.log("Result: ", admins);
 
         console.log("Finished testing database!");
     } catch (error) {

@@ -88,6 +88,24 @@ async function createPostTag(
     }
 }
 
+async function createAdmin({
+    username,
+    password
+}){
+    try {
+        const {rows: [user]} = await client.query(`
+            INSERT INTO admins (username, password)
+            VALUES ($1, $2)
+            ON CONFLICT (username) DO NOTHING
+            RETURNING *;
+        `, [username, password]);
+
+        return user;
+    } catch (error) {
+        throw error;
+    }
+}
+
 //READ
 async function getPostById(postId) {
     try {
@@ -148,12 +166,21 @@ async function getAllPostsByTag(tagName) {
 }
 
 async function getAllTags() {
-    const { rows } = await client.query(
-        `SELECT id, content
+    const { rows } = await client.query(`
+        SELECT id, content
         FROM tags;
     `);
 
     return rows;
+}
+
+async function getAllAdmins(){
+    const {rows: users} = await client.query(`
+        SELECT id, username
+        FROM admins;
+    `,);
+
+    return users;
 }
 
 //UPDATE
@@ -212,5 +239,7 @@ module.exports = {
     getAllPosts,
     getAllPostsByTag,
     updatePost,
-    getAllTags
+    getAllTags,
+    createAdmin,
+    getAllAdmins
 }
