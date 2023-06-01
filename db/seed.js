@@ -4,9 +4,8 @@ const {
     getAllPosts,
     createPost,
     updatePost,
-    getAllTags,
     getAllPostsByTag,
-    addTagsToPost
+    getAllTags
 } = require('./index');
 
 //DROP ALL TABLES
@@ -124,9 +123,11 @@ async function testDB() {
 
         console.log("Calling getAllPostsByTag, #tagNumber2...");
         const postsByTag = await getAllPostsByTag("#tagNumber2");
-        // const postsByTag2 = await getAllPostsByTag(tags[1].id);
         console.log("Result: ", postsByTag);
-        // console.log("Result: ", postsByTag2);
+
+        console.log("Calling getAllTags...");
+        const allTags = await getAllTags();
+        console.log("Result:", allTags);
 
         console.log("Finished testing database!");
     } catch (error) {
